@@ -1,0 +1,143 @@
+<!-- Web-based Quiz System: Admin + User Login + Timed Quiz -->
+<!-- Technologies: HTML + JS (Frontend), Firebase or simple backend later -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preconception Care Quiz System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    #quiz-container, #admin-panel { margin-top: 20px; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Preconception Care Quiz System</h1>
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <label for="role">Login as:</label>
+    <select id="role">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <br>
+    <label for="username">Username:</label>
+    <input type="text" id="username">
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password">
+    <br>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="admin-panel" class="hidden">
+    <h2>Admin Panel</h2>
+    <p>Here you can add questions (feature expandable).</p>
+    <textarea id="admin-question" rows="3" cols="50" placeholder="Enter new question..."></textarea>
+    <br>
+    <button onclick="addQuestion()">Add Question</button>
+    <ul id="admin-questions"></ul>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Quiz Panel -->
+  <div id="quiz-container" class="hidden">
+    <h2>Timed Quiz</h2>
+    <div id="timer">Time Remaining: <span id="time">30:00</span></div>
+    <div id="quiz"></div>
+    <button onclick="submitQuiz()">Submit</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const users = { admin: 'admin123', user: 'user123' }; // Sample users
+    let role = '';
+    let timeLeft = 1800; // 30 minutes in seconds
+    let timerInterval;
+
+    const questions = [
+      "What is the main purpose of preconception care?",
+      "When should preconception care ideally begin?",
+      "Which of these professionals can provide preconception care?"
+    ];
+
+    function login() {
+      const enteredRole = document.getElementById('role').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      if (users[enteredRole] && password === users[enteredRole]) {
+        role = enteredRole;
+        document.getElementById('login-screen').classList.add('hidden');
+        if (role === 'admin') {
+          document.getElementById('admin-panel').classList.remove('hidden');
+          loadAdminQuestions();
+        } else {
+          document.getElementById('quiz-container').classList.remove('hidden');
+          startQuiz();
+        }
+      } else {
+        alert('Invalid login');
+      }
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+    function startQuiz() {
+      const quizDiv = document.getElementById('quiz');
+      quizDiv.innerHTML = '';
+      questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.innerHTML = `<p>${index + 1}. ${q}</p><input type='text' name='q${index}'>`;
+        quizDiv.appendChild(div);
+      });
+      startTimer();
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        document.getElementById('time').textContent = `${mins}:${secs < 10 ? '0' + secs : secs}`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          alert('Time is up! Submitting quiz.');
+          submitQuiz();
+        }
+      }, 1000);
+    }
+
+    function submitQuiz() {
+      clearInterval(timerInterval);
+      alert('Quiz submitted!');
+      // Optionally collect answers and store/send to server
+    }
+
+    function addQuestion() {
+      const newQ = document.getElementById('admin-question').value.trim();
+      if (newQ) {
+        questions.push(newQ);
+        document.getElementById('admin-question').value = '';
+        loadAdminQuestions();
+      }
+    }
+
+    function loadAdminQuestions() {
+      const ul = document.getElementById('admin-questions');
+      ul.innerHTML = '';
+      questions.forEach((q, i) => {
+        const li = document.createElement('li');
+        li.textContent = `${i + 1}. ${q}`;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
